@@ -271,7 +271,7 @@ class Carousel {
     let carousel, slides, index, slidenav, settings, timer, setFocus, animationSuspended;
     settings = 123;
     console.log(settings);
-    this.init(this.carouselObj);
+    // this.init(this.carouselObj);
   }
 
 }
