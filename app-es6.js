@@ -2,12 +2,21 @@ console.log('Es6');
 
 class Carousel {
 
-  constructor(carouselObj) {
-    this.carouselObj = carouselObj;
+  constructor() {
+    var carousel = this.carousel;
+    this.slides,
+    this.index,
+    this.slidenav,
+    this.settings,
+    this.timer,
+    this.setFocus,
+    this.animationSuspended;
+    carousel = 'Hi there'
   }
 
   forEachElement(elements, fn){
-    forEachElement(elements, fn)
+    for (var i = 0; i < elements.length; i++)
+      fn(elements[i], i);
   }
 
   removeClass(el, className) {
@@ -26,15 +35,20 @@ class Carousel {
     }
   }
 
-  init(set) {
+  init(set,settings,carousel,slides,slidenav,index,timer,animationSuspended) {
     console.log(set);
-    console.log(settings);
+
+    // Make settings available to all functions
     settings = set;
+    console.log(settings);
+
+    // Select the element and the individual slides
     carousel = document.getElementById(settings.id);
     slides = carousel.querySelectorAll('.slide');
 
     carousel.className = 'active carousel';
 
+    // Create unordered list for controls, and attach click events fo previous and next slide
     var ctrls = document.createElement('ul');
 
     ctrls.className = 'controls';
@@ -46,16 +60,17 @@ class Carousel {
       '</li>';
 
     ctrls.querySelector('.btn-prev')
-      .addEventListener('click', function () {
-        prevSlide(true);
+      .addEventListener('click',  ()=> {
+        this.prevSlide(true);
       });
     ctrls.querySelector('.btn-next')
-      .addEventListener('click', function () {
-        nextSlide(true);
+      .addEventListener('click',  ()=> {
+        this.nextSlide(true);
       });
 
     carousel.appendChild(ctrls);
 
+    // If the carousel is animated or a slide navigation is requested in the settings, another unordered list that contains those elements is added. (Note that you cannot supress the navigation when it is animated.)
     if (settings.slidenav || settings.animate) {
       slidenav = document.createElement('ul');
 
@@ -74,7 +89,7 @@ class Carousel {
       }
 
       if (settings.slidenav) {
-        forEachElement(slides, function(el, i){
+        this.forEachElement(slides, function(el, i){
           var li = document.createElement('li');
           var klass = (i===0) ? 'class="current" ' : '';
           var kurrent = (i===0) ? ' <span class="visuallyhidden">(Current Item)</span>' : '';
@@ -84,16 +99,16 @@ class Carousel {
         });
       }
 
-      slidenav.addEventListener('click', function(event) {
+      slidenav.addEventListener('click', (event)=> {
         var button = event.target;
         if (button.localName == 'button') {
           if (button.getAttribute('data-slide')) {
-            stopAnimation();
-            setSlides(button.getAttribute('data-slide'), true);
+            this.stopAnimation();
+            this.setSlides(button.getAttribute('data-slide'), true);
           } else if (button.getAttribute('data-action') == "stop") {
-            stopAnimation();
+            this.stopAnimation();
           } else if (button.getAttribute('data-action') == "start") {
-            startAnimation();
+            this.startAnimation();
           }
         }
       }, true);
@@ -102,16 +117,18 @@ class Carousel {
       carousel.appendChild(slidenav);
     }
 
+    // Add a live region to announce the slide number when using the previous/next buttons
     var liveregion = document.createElement('div');
     liveregion.setAttribute('aria-live', 'polite');
     liveregion.setAttribute('aria-atomic', 'true');
     liveregion.setAttribute('class', 'liveregion visuallyhidden');
     carousel.appendChild(liveregion);
 
-      slides[0].parentNode.addEventListener('transitionend', function (event) {
+    // After the slide transitioned, remove the in-transition class, if focus should be set, set the tabindex attribute to -1 and focus the slide.
+      slides[0].parentNode.addEventListener('transitionend',  (event)=> {
         var slide = event.target;
-        removeClass(slide, 'in-transition');
-        if (hasClass(slide, 'current'))  {
+        this.removeClass(slide, 'in-transition');
+        if (this.hasClass(slide, 'current'))  {
           if(setFocus) {
             slide.setAttribute('tabindex', '-1');
             slide.focus();
@@ -120,30 +137,43 @@ class Carousel {
         }
       });
 
-      carousel.addEventListener('mouseenter', suspendAnimation);
-      carousel.addEventListener('mouseleave', function(event) {
+      // When the mouse enters the carousel, suspend the animation.
+      carousel.addEventListener('mouseenter', this.suspendAnimation);
+
+      // When the mouse leaves the carousel, and the animation is suspended, start the animation.
+      carousel.addEventListener('mouseleave', (event)=> {
         if (animationSuspended) {
-          startAnimation();
+          this.startAnimation();
         }
       });
 
-      carousel.addEventListener('focusin', function(event) {
-        if (!hasClass(event.target, 'slide')) {
-          suspendAnimation();
+      // When the focus enters the carousel, suspend the animation
+      carousel.addEventListener('focusin', (event)=> {
+        if (!this.hasClass(event.target, 'slide')) {
+          this.suspendAnimation();
         }
       });
-      carousel.addEventListener('focusout', function(event) {
+
+      // When the focus leaves the carousel, and the animation is suspended, start the animation
+      carousel.addEventListener('focusout', (event)=> {
         if (!hasClass(event.target, 'slide') && animationSuspended) {
-          startAnimation();
+          this.startAnimation();
         }
       });
 
-    index = 0;
-    setSlides(index);
+      // Set the index (=current slide) to 0 – the first slide
+      index = 0;
+      console.log(carousel, slides, index, slidenav, settings, index);
 
+      this.setSlides(index);
+
+      // If the carousel is animated, advance to the
+      // next slide after 5s
      if (settings.startAnimated) {
-      timer = setTimeout(nextSlide, 5000);
+      timer = setTimeout(this.nextSlide, 5000);
     }
+    console.log(carousel, slides, index, slidenav, settings, index);
+    // return carousel, slides, index, slidenav, settings, index; won't work
   }
 
   setSlides(new_current, setFocusHere, transition, announceItemHere) {
@@ -254,29 +284,29 @@ class Carousel {
     }
   }
 
-  returnCarousel() {
+  returnCarousel(options) {
+
+    let carousel, slides, index, slidenav, settings, timer, setFocus, animationSuspended,announceItem;
+    this.init(options,carousel,slides,index,slidenav,settings, timer, animationSuspended);
+
+    console.log(carousel, slides, index, slidenav, settings, index);
+    this.setSlides(setFocus,announceItem);
 
     return {
-      init:init,
-      next:nextSlide,
-      prev:prevSlide,
-      goto:setSlides,
-      stop:stopAnimation,
-      start:startAnimation
+      init:this.init,
+      next:this.nextSlide,
+      prev:this.prevSlide,
+      goto:this.setSlides,
+      stop:this.stopAnimation,
+      start:this.startAnimation
     }
-
-  }
-
-  setCarousel() {
-    let carousel, slides, index, slidenav, settings, timer, setFocus, animationSuspended;
-    settings = 123;
-    console.log(settings);
-    // this.init(this.carouselObj);
   }
 
 }
 
-const carousel1 = new Carousel({
+const carousel1 = new Carousel();
+
+carousel1.returnCarousel({
   id: 'c',
   slidenav: true,
   animate: true,
@@ -284,5 +314,3 @@ const carousel1 = new Carousel({
 });
 
 console.log(carousel1);
-
-carousel1.setCarousel();
